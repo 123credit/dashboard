@@ -6,6 +6,32 @@
 <title>123credit.ch - Konkurrenz-Dashboard</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+/* ====== LOGIN OVERLAY ====== */
+#login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#0a0a12 0%,#0f0f1a 50%,#0a0f1e 100%);z-index:9999;display:flex;align-items:center;justify-content:center;}
+#login-overlay.hidden{display:none}
+.login-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:44px 40px;width:100%;max-width:400px;box-shadow:0 30px 60px rgba(0,0,0,0.6);}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-logo-badge{display:inline-block;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-size:26px;font-weight:800;padding:10px 22px;border-radius:10px;letter-spacing:-0.5px;}
+.login-logo-sub{color:rgba(255,255,255,0.35);font-size:12px;margin-top:8px;letter-spacing:2px;text-transform:uppercase;}
+.login-title{color:#fff;font-size:20px;font-weight:700;text-align:center;margin-bottom:6px;}
+.login-sub{color:rgba(255,255,255,0.38);font-size:13px;text-align:center;margin-bottom:28px;}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;color:rgba(255,255,255,0.6);font-size:12px;font-weight:600;margin-bottom:6px;letter-spacing:0.4px;}
+.login-field input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#fff;font-size:14px;outline:none;transition:border-color .2s;}
+.login-field input:focus{border-color:#8b5cf6;box-shadow:0 0 0 3px rgba(139,92,246,0.2);}
+.login-field input::placeholder{color:rgba(255,255,255,0.2);}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:all .2s;letter-spacing:0.3px;}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,0.4);}
+.login-err{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;padding:10px 14px;border-radius:8px;font-size:13px;text-align:center;margin-top:14px;display:none;}
+.login-footer{color:rgba(255,255,255,0.2);font-size:11px;text-align:center;margin-top:24px;}
+/* User-Badge in Topbar */
+#user-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.55);}
+.role-pill{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.role-pill.admin{background:rgba(139,92,246,0.2);color:#a78bfa;}
+.role-pill.mitarbeiter{background:rgba(59,130,246,0.15);color:#60a5fa;}
+.readonly-lock{pointer-events:none;opacity:0.35;position:relative;}
+.readonly-lock::after{content:'🔒';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;opacity:0.8;}
+/* ====== END LOGIN ====== */
 :root{--bg:#0f0f15;--surface:#1a1a24;--border:#282835;--text:#e0e0e8;--muted:#9a9aaa;--dim:#6a6a7a;--purple:#8b5cf6;--pink:#ec4899;--green:#10b981;--blue:#3b82f6;--orange:#f59e0b;--cyan:#06b6d4;--red:#ef4444}
 body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5}
 .layout{display:flex;height:100vh;overflow:hidden}
@@ -100,6 +126,29 @@ tr:hover{background:var(--bg)}
 </style>
 </head>
 <body>
+<!-- ====== LOGIN OVERLAY ====== -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-badge">123credit.ch</div>
+      <div class="login-logo-sub">Konkurrenz-Intelligence</div>
+    </div>
+    <div class="login-title">🔐 Anmelden</div>
+    <p class="login-sub">Nur für 123credit.ch Mitarbeiter</p>
+    <div class="login-field">
+      <label>E-Mail</label>
+      <input type="email" id="li-email" placeholder="name@123credit.ch" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>Passwort</label>
+      <input type="password" id="li-pw" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">🚀 Einloggen</button>
+    <div class="login-err" id="li-err">❌ E-Mail oder Passwort falsch</div>
+    <div class="login-footer">🔒 Nur für 123credit.ch Mitarbeiter</div>
+  </div>
+</div>
+<!-- ====== END LOGIN ====== -->
 <div class="layout">
 <div class="sidebar">
 <div class="sidebar-header">
@@ -131,7 +180,7 @@ tr:hover{background:var(--bg)}
 <span class="topbar-title" id="page-title">Übersicht</span>
 <div class="live-tag"><span class="live-dot"></span>24/7 AKTIV</div>
 </div>
-<div style="font-size:11px;color:var(--muted)" class="mono">03.04.2026 · Schweizer Kreditmarkt</div>
+<div style="display:flex;align-items:center;gap:12px"><div id="user-badge"><span id="ub-name">–</span>&nbsp;<span class="role-pill" id="ub-role">–</span></div><button onclick="doLogout()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);padding:5px 12px;border-radius:7px;cursor:pointer;font-size:11px;">Abmelden</button></div>
 </div>
 <div class="pages">
 
@@ -320,6 +369,57 @@ function renderAdsMetrics(){if(adsData.length===0)return;const totalClicks=adsDa
 function saveMongoDB(){const uri=document.getElementById('mongo-uri').value.trim(),db=document.getElementById('mongo-db').value.trim();if(!uri)return alert('Connection String erforderlich');localStorage.setItem('mongo_uri',uri);localStorage.setItem('mongo_db',db);document.getElementById('mongo-status').innerHTML='<span style="color:var(--green)">✓ Verbindung gespeichert</span>';}
 function saveGoogleAccount(){const id=document.getElementById('google-account').value.trim();localStorage.setItem('google_account',id);alert('Google Account ID gespeichert: '+id);}
 init();
+
+// ====== LOGIN SYSTEM ======
+const USERS = {
+  'admin@123credit.ch':       {hash:'240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',role:'admin',name:'Admin'},
+  'luca@123credit.ch':        {hash:'240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',role:'admin',name:'Luca'},
+  'remo@123credit.ch':        {hash:'240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',role:'admin',name:'Remo'},
+  'mitarbeiter@123credit.ch': {hash:'9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',role:'mitarbeiter',name:'Mitarbeiter'}
+};
+async function sha256(msg){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+async function doLogin(){
+  const email=document.getElementById('li-email').value.trim().toLowerCase();
+  const pw=document.getElementById('li-pw').value;
+  const err=document.getElementById('li-err');
+  if(!email||!pw){err.textContent='⚠️ Bitte E-Mail und Passwort eingeben';err.style.display='block';return;}
+  const user=USERS[email];
+  if(!user){err.textContent='❌ E-Mail oder Passwort falsch';err.style.display='block';return;}
+  const hash=await sha256(pw);
+  if(hash!==user.hash){err.textContent='❌ E-Mail oder Passwort falsch';err.style.display='block';return;}
+  sessionStorage.setItem('ci_auth',JSON.stringify({email,role:user.role,name:user.name,t:Date.now()}));
+  applyAuth(user);
+}
+function applyAuth(user){
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('ub-name').textContent=user.name;
+  const pill=document.getElementById('ub-role');
+  pill.textContent=user.role==='admin'?'Admin':'Mitarbeiter';
+  pill.className='role-pill '+(user.role==='admin'?'admin':'mitarbeiter');
+  if(user.role!=='admin'){
+    // Sperr Settings-Seite und Speichern-Buttons fuer Nur-Lesen
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.textContent.includes('Einstellungen'))n.style.opacity='0.35';
+    });
+    ['save-key-btn','save-mongo-btn','save-google-btn'].forEach(id=>{
+      const el=document.getElementById(id);if(el){el.disabled=true;el.style.opacity='0.35';}
+    });
+    // Alle Buttons in Settings deaktivieren wenn man drauf klickt
+    const origShow=window.showPage;
+    window.showPage=function(id,el){
+      if(id==='settings'&&user.role!=='admin'){alert('🔒 Einstellungen sind nur für Admins zugänglich.');return;}
+      origShow(id,el);
+    };
+  }
+}
+function doLogout(){sessionStorage.removeItem('ci_auth');location.reload();}
+// Auto-Login wenn Session noch gültig
+(function(){
+  const s=sessionStorage.getItem('ci_auth');
+  if(s){try{const d=JSON.parse(s);if(d.t&&(Date.now()-d.t)<8*3600000){applyAuth(d);return;}}catch(e){}}
+})();
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('login-overlay').classList.contains('hidden'))doLogin();});
+// ====== END LOGIN ======
 </script>
 </body>
 </html>
